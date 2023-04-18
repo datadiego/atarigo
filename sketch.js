@@ -17,7 +17,7 @@ function calc_espacio(nlines){
 }
 
 function getNeighbors(x, y, target){
-  let neighbors = []
+  let neighbors = createArray(boardSize)
   if(x > 0 && board[x-1][y] == target){
     neighbors.push([x-1, y])
   }
@@ -38,7 +38,26 @@ function checkVisitedAndBoardSize(visited, board){
   if(visited.length != board.length){
     return false
   }
+
+  for(let i = 0; i < visited.length; i++){
+    if(visited[i].length != board[i].length){
+      return false
+    }
+  }
+  return true
 }
+
+function createVisitedArray(nlines){
+  let array = []
+  for(let i = 0; i < nlines; i++){
+    array.push([])
+    for(let j = 0; j < nlines; j++){
+      array[i].push(false)
+    }
+  }
+  return array
+}
+
 function dfs(x, y, target, visited){
   if(checkVisitedAndBoardSize(visited, board) == false){
     return 
@@ -46,15 +65,17 @@ function dfs(x, y, target, visited){
   if(board[x][y] != target){
     return
   }
-  visited.push([x, y])
+  visited[x][y] = true
   let neighbors = getNeighbors(x, y, target)
   for(let i = 0; i < neighbors.length; i++){
-    if(!visited.includes(neighbors[i])){
+    if(visited[neighbors[i][0]][neighbors[i][1]] == false){
       dfs(neighbors[i][0], neighbors[i][1], target, visited)
     }
   }
+  if (x === 0 && y === 0) console.log("grupo:",visited)
   return visited
 }
+
 
 function showCircleBlack(x, y){
   //El circulo solo se muestra con multiplos del anchoBase
@@ -140,7 +161,7 @@ function addWhiteStoneToArray(x, y){
 
 function drawBoard(nlines){
   let ancho = calc_espacio(nlines)
-  strokeWeight(2)
+  strokeWeight(1)
   for(let i = 1; i < nlines+1; i++){
     line(i*ancho, ancho, i*ancho, height-ancho)
     line(ancho, i*ancho, width-ancho, i*ancho)
@@ -213,7 +234,8 @@ function mouseClicked(fxn){
 }
 function keyPressed(){
   if(keyCode == 65){
-    getGroups()
+    let visited = createVisitedArray(boardSize)
+    dfs(0,0,1, visited)
     return
   }
   if(keyCode == 66){
@@ -249,16 +271,6 @@ function setup() {
   colorWhitePlayer = color(220)
   anchoBase = calc_espacio(boardSize)
 
-  // inputSize = createSelect();
-  // inputSize.option('3x3');
-  // inputSize.option('5x5');
-  // inputSize.option('10x10');
-  // inputSize.option('19x19');
-  // inputSize.position(20, 65);
-  // inputSize.size(100, 20);
-  // inputSize.changed(changeBoardSize);
-
-  //put a p instead of a select
   let textBoardSize = createP('Board Size')
   textBoardSize.position(20, 35)
   textBoardSize.style('font-size', '20px')
