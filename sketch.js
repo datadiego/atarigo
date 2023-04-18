@@ -4,7 +4,6 @@ let colorLineas;
 let colorBlack;
 let colorWhite;
 let anchoBase;
-let inputSize;
 let inputMode;
 let stoneSelector;
 let board = createArray(boardSize);
@@ -15,6 +14,46 @@ let selectedStone = 1;
 
 function calc_espacio(nlines){
   return width/(nlines+1)
+}
+
+function getNeighbors(x, y, target){
+  let neighbors = []
+  if(x > 0 && board[x-1][y] == target){
+    neighbors.push([x-1, y])
+  }
+  if(x < boardSize-1 && board[x+1][y] == target){
+    neighbors.push([x+1, y])
+  }
+  if(y > 0 && board[x][y-1] == target){
+    neighbors.push([x, y-1])
+  }
+  if(y < boardSize-1 && board[x][y+1] == target){
+    neighbors.push([x, y+1])
+  }
+  console.log(neighbors)
+  return neighbors
+}
+function checkVisitedAndBoardSize(visited, board){
+  //check if both are the same size
+  if(visited.length != board.length){
+    return false
+  }
+}
+function dfs(x, y, target, visited){
+  if(checkVisitedAndBoardSize(visited, board) == false){
+    return 
+  }
+  if(board[x][y] != target){
+    return
+  }
+  visited.push([x, y])
+  let neighbors = getNeighbors(x, y, target)
+  for(let i = 0; i < neighbors.length; i++){
+    if(!visited.includes(neighbors[i])){
+      dfs(neighbors[i][0], neighbors[i][1], target, visited)
+    }
+  }
+  return visited
 }
 
 function showCircleBlack(x, y){
@@ -74,6 +113,7 @@ function addBlackStoneToArray(x, y){
     }
     if(board[valX-1][valY-1] == 0){
       board[valX-1][valY-1] = 1
+      turn++;
     }
     
   }
@@ -91,6 +131,7 @@ function addWhiteStoneToArray(x, y){
     }
     if(board[valX-1][valY-1] == 0){
       board[valX-1][valY-1] = 2
+      turn++;
     }
   }
 }
@@ -106,13 +147,24 @@ function drawBoard(nlines){
   }
 }
 
-function changeBoardSize(){
-  console.log(int(inputSize.value()))
-  boardSize = int(inputSize.value())
-  anchoBase = calc_espacio(boardSize)
-  board = createArray(boardSize)
-}
 
+function increaseBoardSize(){
+  if(boardSize < 19){
+  boardSize++
+  updateSizeSelector()
+  startGame()
+  }
+}
+function decreaseBoardSize(){
+  if(boardSize > 1){
+    boardSize--
+    startGame()
+  }
+}
+function updateSizeSelector(){
+  let val = str(boardSize+ 'x' + boardSize)
+
+}
 function createArray(nlines){
   let array = []
   for(let i = 0; i < nlines; i++){
@@ -124,32 +176,16 @@ function createArray(nlines){
   return array
 }
 
-
-
-function checkColor(x, y, color){
-  //check if i have another stone of the same color in the surroundings
-  let surroundings = getNearTiles(x, y)
-  let count = 0
-  for(let i = 0; i < surroundings.length; i++){
-    if(surroundings[i] == color){
-      count++
-    }
-  }
-  if(count > 1){
-    return true
-  }
-  return false
-}
-
-
 function startGame(){
-  console.log(inputMode.value())
-  if(inputMode.value() == 'Atari Go'){
   board = createArray(boardSize)
   turno = 0;
-  game = true;
+  anchoBase = calc_espacio(boardSize)
+  if(inputMode.value() == 'Atari Go'){
+    game = true;
+    editMode = false
   }else if(inputMode.value() == 'Edit Mode'){
     editMode = true
+    game = false
   }
 }
 
@@ -163,7 +199,6 @@ function mouseClicked(fxn){
     }else{
       addBlackStoneToArray(mouseX, mouseY)
     }
-    turno++
   }
 
   if (editMode){
@@ -178,7 +213,7 @@ function mouseClicked(fxn){
 }
 function keyPressed(){
   if(keyCode == 65){
-    console.log(board)
+    getGroups()
     return
   }
   if(keyCode == 66){
@@ -213,19 +248,29 @@ function setup() {
   colorBlackPlayer = color(0)
   colorWhitePlayer = color(220)
   anchoBase = calc_espacio(boardSize)
-  inputSize = createSelect();
-  inputSize.option('3x3');
-  inputSize.option('5x5');
-  inputSize.option('10x10');
-  inputSize.option('19x19');
-  inputSize.position(20, 65);
-  inputSize.size(100, 20);
-  inputSize.changed(changeBoardSize);
+
+  // inputSize = createSelect();
+  // inputSize.option('3x3');
+  // inputSize.option('5x5');
+  // inputSize.option('10x10');
+  // inputSize.option('19x19');
+  // inputSize.position(20, 65);
+  // inputSize.size(100, 20);
+  // inputSize.changed(changeBoardSize);
+
+  //put a p instead of a select
+  let textBoardSize = createP('Board Size')
+  textBoardSize.position(20, 35)
+  textBoardSize.style('font-size', '20px')
+
+
   inputMode = createSelect();
   inputMode.option('Atari Go');
   inputMode.option('Edit Mode');
+  inputMode.changed(startGame)
   inputMode.position(20, 95);
   inputMode.size(100, 20);
+
   //create a switch button for the selectstone
   stoneSelector = createCheckbox('Stone Selector', false);
   stoneSelector.position(20, 125);
@@ -235,8 +280,21 @@ function setup() {
 
   let buttonStart = createButton('GO!');
   buttonStart.size(60, 20)
-  buttonStart.position(inputSize.x + inputSize.width, 65);
+  buttonStart.position(120, 95);
   buttonStart.mousePressed(startGame);
+
+  let buttonIncreaseSize = createButton('+');
+  buttonIncreaseSize.size(20, 20)
+  buttonIncreaseSize.position(textBoardSize.position().x + textWidth('Board Size') + 40, 55)
+  buttonIncreaseSize.mousePressed(increaseBoardSize);
+
+  let buttonDecreaseSize = createButton('-');
+  buttonDecreaseSize.size(20, 20)
+  buttonDecreaseSize.position(textBoardSize.position().x + textWidth('Board Size') + 60, 55)
+  buttonDecreaseSize.mousePressed(decreaseBoardSize);
+
+
+  startGame()
 }
 
 
