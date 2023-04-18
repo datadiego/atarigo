@@ -113,7 +113,7 @@ function addBlackStoneToArray(x, y){
     }
     if(board[valX-1][valY-1] == 0){
       board[valX-1][valY-1] = 1
-      turn++;
+      turno++;
     }
     
   }
@@ -131,7 +131,7 @@ function addWhiteStoneToArray(x, y){
     }
     if(board[valX-1][valY-1] == 0){
       board[valX-1][valY-1] = 2
-      turn++;
+      turno++;
     }
   }
 }
@@ -178,7 +178,7 @@ function createArray(nlines){
 
 function startGame(){
   board = createArray(boardSize)
-  turno = 0;
+  turno = 1;
   anchoBase = calc_espacio(boardSize)
   if(inputMode.value() == 'Atari Go'){
     game = true;
