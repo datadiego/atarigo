@@ -30,7 +30,6 @@ function getNeighbors(x, y, target){
   if(y < boardSize-1 && board[x][y+1] == target){
     neighbors.push([x, y+1])
   }
-  console.log(neighbors)
   return neighbors
 }
 function checkVisitedAndBoardSize(visited, board){
@@ -72,7 +71,6 @@ function dfs(x, y, target, visited){
       dfs(neighbors[i][0], neighbors[i][1], target, visited)
     }
   }
-  if (x === 0 && y === 0) console.log("grupo:",visited)
   return visited
 }
 
@@ -230,21 +228,34 @@ function mouseClicked(fxn){
     addWhiteStoneToArray(mouseX, mouseY)
   }
 
-}
+  }
 }
 function keyPressed(){
   if(keyCode == 65){
-    let visited = createVisitedArray(boardSize)
-    dfs(0,0,1, visited)
+    let visitedBlack = createVisitedArray(boardSize)
+    let groupsBlack = []
+    let visitedWhite = createVisitedArray(boardSize)
+    let groupsWhite = []
+    //recorre el array de board y busca los grupos de piedras negras
+    for(let i = 0; i < boardSize; i++){
+      for(let j = 0; j < boardSize; j++){
+        if(board[i][j] == 1 && !visitedBlack[i][j]){
+          groupsBlack.push(dfs(i, j, 1, visitedBlack))
+        }
+        if(board[i][j] == 2 && !visitedWhite[i][j]){
+          groupsWhite.push(dfs(i, j, 2, visitedWhite))
+        }
+      }
+    }
+    console.log("Hay " +groupsBlack.length+" grupos negros", groupsBlack)
+    console.log("Hay " +groupsWhite.length+" grupos blancos", groupsWhite)
     return
   }
   if(keyCode == 66){
-    console.log('black')
     selectedStone = 2
     return
   }
   if(keycode = 78){
-    console.log('white')
     selectedStone = 1
     return
   }
