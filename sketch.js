@@ -230,23 +230,36 @@ function mouseClicked(fxn){
 
   }
 }
-function keyPressed(){
-  if(keyCode == 65){
-    let visitedBlack = createVisitedArray(boardSize)
-    let groupsBlack = []
-    let visitedWhite = createVisitedArray(boardSize)
-    let groupsWhite = []
-    //recorre el array de board y busca los grupos de piedras negras
-    for(let i = 0; i < boardSize; i++){
-      for(let j = 0; j < boardSize; j++){
-        if(board[i][j] == 1 && !visitedBlack[i][j]){
-          groupsBlack.push(dfs(i, j, 1, visitedBlack))
-        }
-        if(board[i][j] == 2 && !visitedWhite[i][j]){
-          groupsWhite.push(dfs(i, j, 2, visitedWhite))
-        }
+function getWhiteGroups(){
+  let visited = createVisitedArray(boardSize)
+  let groups = []
+  for(let i = 0; i < boardSize; i++){
+    for(let j = 0; j < boardSize; j++){
+      if(board[i][j] == 2 && !visited[i][j]){
+        groups.push(dfs(i, j, 2, visited))
       }
     }
+  }
+  return groups
+}
+function getBlackGroups(){
+  let visited = createVisitedArray(boardSize)
+  let groups = []
+  for(let i = 0; i < boardSize; i++){
+    for(let j = 0; j < boardSize; j++){
+      if(board[i][j] == 1 && !visited[i][j]){
+        groups.push(dfs(i, j, 1, visited))
+      }
+    }
+  }
+  return groups
+}
+
+function keyPressed(){
+  if(keyCode == 65){
+    let groupsBlack = getBlackGroups()
+    let groupsWhite = getWhiteGroups()
+   
     console.log("Hay " +groupsBlack.length+" grupos negros", groupsBlack)
     console.log("Hay " +groupsWhite.length+" grupos blancos", groupsWhite)
     return
